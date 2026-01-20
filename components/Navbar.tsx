@@ -1,38 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
+import { useState } from 'react'
+import GoogleAuth from './GoogleAuth'
 
 export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
-      setLoading(false)
-    }
-    fetchUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const handleSignOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    setUser(null)
-    window.location.href = '/'
-  }
 
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -51,31 +24,10 @@ export default function Navbar() {
             <Link href="/pricing" className="text-gray-600 hover:text-primary-600 transition-colors">
               Pricing
             </Link>
-
-            {loading ? (
-              <div className="w-20 h-8 bg-gray-100 rounded animate-pulse" />
-            ) : user ? (
-              <>
-                <Link href="/dashboard" className="text-gray-600 hover:text-primary-600 transition-colors">
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="text-gray-600 hover:text-primary-600 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/auth/sign-in" className="text-gray-600 hover:text-primary-600 transition-colors">
-                  Sign In
-                </Link>
-                <Link href="/auth/sign-up" className="btn-primary text-sm py-2">
-                  Get Started
-                </Link>
-              </>
-            )}
+            <Link href="/dashboard" className="text-gray-600 hover:text-primary-600 transition-colors">
+              Dashboard
+            </Link>
+            <GoogleAuth />
           </div>
 
           {/* Mobile menu button */}
@@ -103,25 +55,12 @@ export default function Navbar() {
               <Link href="/pricing" className="text-gray-600 hover:text-primary-600">
                 Pricing
               </Link>
-              {user ? (
-                <>
-                  <Link href="/dashboard" className="text-gray-600 hover:text-primary-600">
-                    Dashboard
-                  </Link>
-                  <button onClick={handleSignOut} className="text-left text-gray-600 hover:text-primary-600">
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link href="/auth/sign-in" className="text-gray-600 hover:text-primary-600">
-                    Sign In
-                  </Link>
-                  <Link href="/auth/sign-up" className="btn-primary text-center">
-                    Get Started
-                  </Link>
-                </>
-              )}
+              <Link href="/dashboard" className="text-gray-600 hover:text-primary-600">
+                Dashboard
+              </Link>
+              <div className="pt-2">
+                <GoogleAuth />
+              </div>
             </div>
           </div>
         )}
